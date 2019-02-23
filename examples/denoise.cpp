@@ -33,9 +33,9 @@ using namespace oidn;
 void printUsage()
 {
   std::cout << "Open Image Denoise Example" << std::endl;
-  std::cout << "Usage: denoise [-ldr ldr_color.pfm] [-srgb] [-hdr hdr_color.pfm]" << std::endl
-            << "               [-alb albedo.pfm] [-nrm normal.pfm]" << std::endl
-            << "               [-o output.pfm] [-ref reference_output.pfm]" << std::endl
+  std::cout << "Usage: denoise [-ldr ldr_color] [-srgb] [-hdr hdr_color]" << std::endl
+            << "               [-alb albedo] [-nrm normal]" << std::endl
+            << "               [-o output] [-ref reference_output]" << std::endl
             << "               [-bench ntimes] [-threads n] [-affinity 0|1]" << std::endl;
 }
 
@@ -111,13 +111,13 @@ int main(int argc, char* argv[])
 
     std::cout << "Loading input" << std::flush;
 
-    color = loadImagePFM(colorFilename);
+    color = loadImage(colorFilename);
     if (!albedoFilename.empty())
-      albedo = loadImagePFM(albedoFilename);
+      albedo = loadImage(albedoFilename);
     if (!normalFilename.empty())
-      normal = loadImagePFM(normalFilename);
+      normal = loadImage(normalFilename);
     if (!refFilename.empty())
-      ref = loadImagePFM(refFilename);
+      ref = loadImage(refFilename);
 
     const int height = color.dims[0];
     const int width  = color.dims[1];
@@ -217,7 +217,7 @@ int main(int argc, char* argv[])
     {
       // Save output image
       std::cout << "Saving output" << std::flush;
-      saveImagePFM(output, outputFilename);
+      saveImage(output, outputFilename);
       std::cout << std::endl;
     }
 

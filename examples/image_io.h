@@ -21,6 +21,14 @@
 
 namespace oidn {
 
+#ifdef HAS_OPEN_EXR
+  // Loads an image from an EXR file
+  Tensor loadImageEXR(const std::string& filename);
+
+  // Saves an image to an EXR file
+  void saveImageEXR(const Tensor& image, const std::string& filename);
+#endif
+
   // Loads an image from a PFM file
   Tensor loadImagePFM(const std::string& filename);
 
@@ -30,5 +38,10 @@ namespace oidn {
   // Saves an image to a PPM file
   void saveImagePPM(const Tensor& image, const std::string& filename);
 
-} // namespace oidn
+  // Loads an image from a file
+  Tensor loadImage(const std::string& filename);
 
+  // Saves an image to a file
+  void saveImage(const Tensor& image, const std::string& filename);
+
+} // namespace oidn

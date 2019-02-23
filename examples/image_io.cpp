@@ -19,7 +19,54 @@
 #include <fstream>
 #include "image_io.h"
 
+#ifdef HAS_OPEN_EXR
+#include <OpenEXR/ImfFrameBuffer.h>
+#include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfInputFile.h>
+#include <OpenEXR/ImfOutputFile.h>
+#endif
+
 namespace oidn {
+
+#ifdef HAS_OPEN_EXR
+  Imf::FrameBuffer frameBufferForEXR(const Tensor& image)
+  {
+    Imf::FrameBuffer frameBuffer;
+    int xStride = image.dims[2]*sizeof(float);
+    int yStride = image.dims[1]*image.dims[2]*sizeof(float);
+    frameBuffer.insert("R", Imf::Slice(Imf::FLOAT, (char*)&image[0], xStride, yStride));
+    frameBuffer.insert("G", Imf::Slice(Imf::FLOAT, (char*)&image[1], xStride, yStride));
+    frameBuffer.insert("B", Imf::Slice(Imf::FLOAT, (char*)&image[2], xStride, yStride));
+    return frameBuffer;
+  }
+
+  Tensor loadImageEXR(const std::string& filename)
+  {
+    Imf::InputFile inputFile(filename.c_str());
+    if (!inputFile.header().channels().findChannel("R") ||
+        !inputFile.header().channels().findChannel("G") ||
+        !inputFile.header().channels().findChannel("B"))
+      throw std::invalid_argument("image must have 3 channels");
+    Imath::Box2i dataWindow = inputFile.header().dataWindow();
+    Tensor image({dataWindow.max.y-dataWindow.min.y+1, dataWindow.max.x-dataWindow.min.x+1, 3}, "hwc");
+    inputFile.setFrameBuffer(frameBufferForEXR(image));
+    inputFile.readPixels(dataWindow.min.y, dataWindow.max.y);
+    return image;
+  }
+
+  void saveImageEXR(const Tensor& image, const std::string& filename)
+  {
+    if (image.ndims() != 3 || image.dims[2] != 3 || image.format != "hwc")
+      throw std::invalid_argument("image must have 3 channels");
+    Imf::Header header(image.dims[1], image.dims[0], 1, Imath::V2f(0, 0), image.dims[1], Imf::INCREASING_Y, Imf::ZIP_COMPRESSION);
+    header.channels().insert("R", Imf::Channel(Imf::FLOAT));
+    header.channels().insert("G", Imf::Channel(Imf::FLOAT));
+    header.channels().insert("B", Imf::Channel(Imf::FLOAT));
+    Imf::OutputFile outputFile(filename.c_str(), header);
+    outputFile.setFrameBuffer(frameBufferForEXR(image));
+    outputFile.writePixels(image.dims[0]);
+  }
+#endif
 
   Tensor loadImagePFM(const std::string& filename)
   {
@@ -139,5 +186,40 @@ namespace oidn {
     }
   }
 
-} // namespace oidn
+  std::string fileExtensionOf(const std::string& filename)
+  {
+    size_t index = filename.rfind('.');
+    if (index == std::string::npos)
+      throw std::invalid_argument("filename has no extension");
+    return filename.substr(index+1);
+  }
 
+  Tensor loadImage(const std::string& filename)
+  {
+    std::string format = fileExtensionOf(filename);
+#ifdef HAS_OPEN_EXR
+    if (format == "exr")
+      return loadImageEXR(filename);
+    else
+#endif
+    if (format == "pfm")
+      return loadImagePFM(filename);
+    else
+      throw std::invalid_argument("image format is not supported");
+  }
+
+  void saveImage(const Tensor& image, const std::string& filename)
+  {
+    std::string format = fileExtensionOf(filename);
+#ifdef HAS_OPEN_EXR
+    if (format == "exr")
+      saveImageEXR(image, filename);
+    else
+#endif
+    if (format == "pfm")
+      saveImagePPM(image, filename);
+    else
+      throw std::invalid_argument("image format is not supported");
+  }
+
+} // namespace oidn

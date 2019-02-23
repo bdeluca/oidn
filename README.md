@@ -80,7 +80,7 @@ you need the following prerequisites:
 
   - You can clone the latest Open Image Denoise sources
         via:
-    
+
         git clone --recursive https://github.com/OpenImageDenoise/oidn.git
 
   - To build Open Image Denoise you need [CMake](http://www.cmake.org)
@@ -123,10 +123,10 @@ Assuming the above prerequisites are all fulfilled, building Open Image
 Denoise through CMake is easy:
 
   - Create a build directory, and go into it
-    
+
         mkdir oidn/build
         cd oidn/build
-    
+
     (We do recommend having separate build directories for different
     configurations such as release, debug, etc.).
 
@@ -135,22 +135,22 @@ Denoise through CMake is easy:
     different compiler, run cmake manually while specifying the desired
     compiler. The default compiler on most Linux machines is `gcc`, but
     it can be pointed to `clang` instead by executing the following:
-    
+
         cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang ..
-    
+
     CMake will now use Clang instead of GCC. If you are OK with using
     the default compiler on your system, then simply skip this step.
     Note that the compiler variables cannot be changed after the first
     `cmake` or `ccmake` run.
 
   - Open the CMake configuration dialog
-    
+
         ccmake ..
 
   - Make sure to properly set the build mode and enable the components
     you need, etc.; then type ’c’onfigure and ’g’enerate. When back on
     the command prompt, build it using
-    
+
         make
 
   - You should now have `libOpenImageDenoise.so` as well as a set of
@@ -238,7 +238,7 @@ oidnCommitDevice(device);
 
 // Create a denoising filter
 OIDNFilter filter = oidnNewFilter(device, "RT"); // generic ray tracing filter
-oidnSetSharedFilterImage(filter, "color",  colorPtr, 
+oidnSetSharedFilterImage(filter, "color",  colorPtr,
                          OIDN_FORMAT_FLOAT3, width, height, 0, 0, 0);
 oidnSetSharedFilterImage(filter, "albedo", albedoPtr,
                          OIDN_FORMAT_FLOAT3, width, height, 0, 0, 0); // optional
@@ -791,6 +791,8 @@ provided image, which can optionally have auxiliary feature images as
 well (e.g. albedo and normal). The images must be stored in the
 [Portable FloatMap](http://www.pauldebevec.com/Research/HDR/PFM/) (PFM)
 format, and the color values must be encoded in little-endian format.
+Optionally, [OpenEXR](http://www.openexr.com/) can be installed for
+additional image format support.
 
 Running `./denoise` without any arguments will bring up a list of
 command line options.
